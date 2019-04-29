@@ -781,7 +781,7 @@ const relationshipUpdate = ({
   const fromLabel = safeLabel(fromType);
   const toVariable = safeVar(toVar);
   const toLabel = safeLabel(toType);
-  const relationshipVariable = safeVar(fromVar + toVar);
+  const relationshipVariable = safeVar(lowercased + '_relation');
   const relationshipLabel = safeLabel(relationshipName);
   const fromTemporalClauses = temporalPredicateClauses(
     preparedParams.from,

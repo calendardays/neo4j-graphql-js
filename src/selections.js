@@ -18,7 +18,8 @@ const {
   isTemporalField,
   getTemporalArguments,
   temporalPredicateClauses,
-  removeIgnoredFields
+  removeIgnoredFields,
+  isRootSelection
 } = require('./utils');
 const {
   customCypherField,
@@ -160,10 +161,23 @@ var buildCypherSelection = function({
 
   // Database meta fields(_id)
   if (fieldName === '_id') {
+    let varName = '';
+    if (getRelationTypeDirectiveArgs(schemaTypeAstNode)) {
+      if (
+        isRootSelection({
+          selectionInfo: secondParentSelectionInfo,
+          rootType: 'relationship'
+        })
+      ) {
+        varName = `${secondParentSelectionInfo.variableName}_relation`;
+      } else {
+        varName = `${parentSelectionInfo.variableName}_relation`;
+      }
+    } else {
+      varName = variableName;
+    }
     return recurse({
-      initial: `${initial}${fieldName}: ID(${safeVar(
-        variableName
-      )})${commaIfTail}`,
+      initial: `${initial}${fieldName}: ID(${safeVar(varName)})${commaIfTail}`,
       ...tailParams
     });
   }
