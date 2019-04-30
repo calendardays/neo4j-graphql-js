@@ -18,7 +18,8 @@ import {
   isTemporalField,
   getTemporalArguments,
   temporalPredicateClauses,
-  removeIgnoredFields
+  removeIgnoredFields,
+  isRootSelection
 } from './utils';
 import {
   customCypherField,
@@ -160,10 +161,32 @@ export function buildCypherSelection({
 
   // Database meta fields(_id)
   if (fieldName === '_id') {
+    let varName = '';
+    if (getRelationTypeDirectiveArgs(schemaTypeAstNode)) {
+      if (
+        isRootSelection({
+          selectionInfo: secondParentSelectionInfo,
+          rootType: 'relationship'
+        })
+      ) {
+        varName = `${secondParentSelectionInfo.variableName}_relation`;
+      } else {
+        if (
+          isRootSelection({
+            selectionInfo: parentSelectionInfo,
+            rootType: 'relationship'
+          })
+        ) {
+          varName = `${parentSelectionInfo.variableName}_relation`;
+        } else {
+          varName = `${variableName}_relation`;
+        }
+      }
+    } else {
+      varName = variableName;
+    }
     return recurse({
-      initial: `${initial}${fieldName}: ID(${safeVar(
-        variableName
-      )})${commaIfTail}`,
+      initial: `${initial}${fieldName}: ID(${safeVar(varName)})${commaIfTail}`,
       ...tailParams
     });
   }
