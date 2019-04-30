@@ -171,7 +171,16 @@ var buildCypherSelection = function({
       ) {
         varName = `${secondParentSelectionInfo.variableName}_relation`;
       } else {
-        varName = `${parentSelectionInfo.variableName}_relation`;
+        if (
+          isRootSelection({
+            selectionInfo: parentSelectionInfo,
+            rootType: 'relationship'
+          })
+        ) {
+          varName = `${parentSelectionInfo.variableName}_relation`;
+        } else {
+          varName = `${variableName}_relation`;
+        }
       }
     } else {
       varName = variableName;
