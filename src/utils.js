@@ -1122,7 +1122,7 @@ var fieldCopyNonNullable = field => {
       const fieldType = field.type;
       const newFieldType = {
         kind: 'NonNullType',
-        type: getNamedType(currentFieldType)
+        type: getNamedType(fieldType)
       };
       if (fieldType.loc) {
         newFieldType.loc = {
