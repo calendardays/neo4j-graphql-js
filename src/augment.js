@@ -499,14 +499,27 @@ const possiblyAddTypeMutations = (astNode, typeMap, resolvers, config) => {
         mutationMap,
         config
       );
-      typeMap = possiblyAddTypeMutation(
-        `Update`,
-        astNode,
-        resolvers,
-        typeMap,
-        mutationMap,
-        config
-      );
+      // Don't generate Update mutation if there are no non-PK, non-_id fields
+      let nFields = 0;
+      for (let field of astNode.fields) {
+        let fieldType = getNamedType(field);
+        if (isBasicScalar(fieldType.name.value)) {
+          if (field.name.value !== '_id') {
+            nFields += 1;
+          }
+        }
+      }
+      const nPKs = getPrimaryKeys(astNode).length;
+      if (nFields > nPKs) {
+        typeMap = possiblyAddTypeMutation(
+          `Update`,
+          astNode,
+          resolvers,
+          typeMap,
+          mutationMap,
+          config
+        );
+      }
       typeMap = possiblyAddTypeMutation(
         `Delete`,
         astNode,
@@ -721,23 +734,25 @@ const possiblyAddRelationMutationField = (
   relationHasProps,
   config
 ) => {
+  // Generate Change mutation when relatedAstNode is a relation type with at least one non-PK, non-_id field
   const mutationTypes = ['Add', 'Remove'];
-  const lowercaseFieldName =
-    capitalizedFieldName.charAt(0).toLowerCase() +
-    capitalizedFieldName.substr(1);
-  const astNode = typeMap[typeName];
-  const fields = astNode.fields;
-  const fieldCount = fields ? fields.length : 0;
-  for (let fieldIndex = 0; fieldIndex < fieldCount; ++fieldIndex) {
-    let field = fields[fieldIndex];
-    let fieldName = field.name.value;
-    if (fieldName == capitalizedFieldName || fieldName == lowercaseFieldName) {
-      if (!getFieldDirective(field, 'relation')) {
-        mutationTypes.splice(1, 0, 'Change');
+  if (!isNodeType(relatedAstNode)) {
+    // Don't generate Update mutation if there are no non-PK, non-_id fields
+    let nFields = 0;
+    for (let field of relatedAstNode.fields) {
+      let fieldType = getNamedType(field);
+      if (isBasicScalar(fieldType.name.value)) {
+        if (field.name.value !== '_id') {
+          nFields += 1;
+        }
       }
-      break;
+    }
+    const nPKs = getPrimaryKeys(relatedAstNode).length;
+    if (nFields > nPKs) {
+      mutationTypes.splice(1, 0, 'Change');
     }
   }
+
   let mutationName = '';
   let payloadTypeName = '';
   let hasSomePropertyField = false;
