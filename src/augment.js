@@ -345,7 +345,6 @@ const possiblyAddTypeInput = (astNode, typeMap, resolvers, config) => {
   if (shouldAugmentType(config, 'mutation', typeName)) {
     let inputSuffix = '';
     let inputName = '';
-    let inputType = '';
     let pks = [];
     if (isNodeType(astNode) || getTypeDirective(astNode, 'relation')) {
       inputSuffix = isNodeType(astNode) ? 'Input' : 'RemoveInput';
@@ -360,8 +359,9 @@ const possiblyAddTypeInput = (astNode, typeMap, resolvers, config) => {
                 getNamedType(pk).name.value
               )}!`
           );
-          inputType = `input ${inputName} { ${pkFields.join(' ')} }`;
-          typeMap[inputName] = parse(inputType);
+          typeMap[inputName] = parse(
+            `input ${inputName} { ${pkFields.join('\n')} }`
+          );
         }
       }
     }
@@ -403,7 +403,7 @@ const possiblyAddTypeInput = (astNode, typeMap, resolvers, config) => {
 
         inputSuffix = 'ChangeInput';
         inputName = `_${astNode.name.value}${inputSuffix}`;
-        // Only used for the .data argument in generated relation creation mutations
+        // Only used for the .data argument in generated relation update mutations
         if (typeMap[inputName] === undefined) {
           pks = getPrimaryKeys(astNode);
           const pkNames = pks.map(pk => pk.name.value);

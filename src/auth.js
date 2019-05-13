@@ -118,6 +118,9 @@ var addDirectiveDeclarations = (typeMap, config) => {
   typeMap['relation'] = parse(
     `directive @relation(name: String, direction: _RelationDirections, from: String, to: String) on FIELD_DEFINITION | OBJECT`
   ).definitions[0];
+  typeMap['pk'] = parse(
+    `directive @pk on FIELD_DEFINITION | INPUT_FIELD_DEFINITION`
+  ).definitions[0];
   // TODO should we change these system directives to having a '_Neo4j' prefix
   typeMap['MutationMeta'] = parse(
     `directive @MutationMeta(relationship: String, from: String, to: String) on FIELD_DEFINITION`

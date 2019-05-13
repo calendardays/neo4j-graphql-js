@@ -688,7 +688,7 @@ const firstField = fields => {
 
 const nonNullFields = fields => {
   return fields.filter(field => {
-    return field.type.kind === 'NonNullType' && field.name.value !== '_id';
+    return isNonNullType(field) && field.name.value !== '_id';
   });
 };
 
@@ -696,7 +696,11 @@ var getPrimaryKeys = astNode => {
   let fields = astNode.fields;
   if (!fields.length) return fields;
   // remove all ignored fields
-  fields = fields.filter(field => !getFieldDirective(field, 'neo4j_ignore'));
+  fields = fields.filter(
+    field =>
+      !getFieldDirective(field, 'neo4j_ignore') &&
+      getFieldDirective(field, 'pk')
+  );
   return nonNullFields(fields);
 };
 
