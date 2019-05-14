@@ -357,7 +357,7 @@ const possiblyAddTypeInput = (astNode, typeMap, resolvers, config) => {
             pk =>
               `${pk.name.value}: ${decideFieldType(
                 getNamedType(pk).name.value
-              )}!`
+              )}! @pk`
           );
           typeMap[inputName] = parse(
             `input ${inputName} { ${pkFields.join('\n')} }`
@@ -1734,10 +1734,8 @@ const buildChangeRelationTypeInputFields = (
   let valueType = {};
   let relationInputFields = fields.reduce((acc, t) => {
     fieldName = t.name.value;
-    f =
-      primaryKeyNames.indexOf(fieldName) >= 0
-        ? fieldCopyNonNullable(t)
-        : fieldCopyNullable(t);
+    let isPrimaryKey = primaryKeyNames.indexOf(fieldName) >= 0;
+    f = isPrimaryKey ? fieldCopyNonNullable(t) : fieldCopyNullable(t);
     valueTypeName = getNamedType(f).name.value;
     valueType = typeMap[valueTypeName];
     if (
@@ -1754,7 +1752,7 @@ const buildChangeRelationTypeInputFields = (
           kind: 'InputValueDefinition',
           name: f.name,
           type: f.type
-        })
+        }) + (isPrimaryKey ? ' @pk' : '')
       );
     }
     return acc;
