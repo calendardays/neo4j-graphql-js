@@ -741,7 +741,10 @@ const possiblyAddRelationMutationField = (
     let nFields = 0;
     for (let field of relatedAstNode.fields) {
       let fieldType = getNamedType(field);
-      if (isBasicScalar(fieldType.name.value)) {
+      if (
+        isBasicScalar(fieldType.name.value) ||
+        isTemporalType(fieldType.name.value)
+      ) {
         if (field.name.value !== '_id') {
           nFields += 1;
         }
